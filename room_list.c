@@ -3,7 +3,19 @@
 #include "CuTest.h"
 
 /*
- * Constructs a new RoomLink structure for the given room.
+ * A structure that stores a pointer to a Room and a pointer to the next
+ * RoomLink.
+ */
+struct RoomLink {
+    struct Room *room;
+    struct RoomLink *next;
+};
+
+/*
+ * Constructor.
+ *
+ * @param room A pointer to a Room.
+ * @return A pointer to a new RoomLink.
  */
 struct RoomLink *new_room_link(struct Room *room) {
     struct RoomLink *link = (struct RoomLink*) malloc(sizeof(struct RoomLink));
@@ -15,8 +27,11 @@ struct RoomLink *new_room_link(struct Room *room) {
 }
 
 /*
- * Deletes the given RoomLink structure and returns the next RoomLink.
-/*/
+ * Deletes the given RoomLink and returns a pointer to the next RoomLink.
+ *
+ * @param room_link A pointer to a RoomLink.
+ * @return A pointer to the next RoomLink.
+ */
 struct RoomLink *del_room_link(struct RoomLink *room_link) {
     struct RoomLink *next = room_link->next;
     free(room_link);
@@ -24,7 +39,9 @@ struct RoomLink *del_room_link(struct RoomLink *room_link) {
 }
 
 /*
- * Constructs a new RoomList structure.
+ * Constructor.
+ *
+ * @return A pointer to a new RoomList.
  */
 struct RoomList *new_room_list() {
     struct RoomList *room_list = (struct RoomList*) malloc(
@@ -38,13 +55,14 @@ struct RoomList *new_room_list() {
 }
 
 /*
- * Deletes the given RoomList structure (including the rooms).
+ * Deletes the given RoomList.
+ *
+ * @param room_list A pointer to a RoomList.
  */
 void del_room_list(struct RoomList *room_list) {
     struct RoomLink *curr = room_list->head;
 
     while (curr != NULL) {
-        del_room(curr->room);
         curr = del_room_link(curr);
     }
 
@@ -52,7 +70,10 @@ void del_room_list(struct RoomList *room_list) {
 }
 
 /*
- * Adds a room to the given room list.
+ * Adds a Room to the given RoomList.
+ *
+ * @param room_list A pointer to a RoomList.
+ * @param room A pointer to a Room.
  */
 void add_room(struct RoomList *room_list, struct Room *room) {
     struct RoomLink *link = new_room_link(room);
@@ -157,6 +178,8 @@ void add_room_should_add_to_list(CuTest *tc) {
 
     // Clean up
     del_room_list(list);
+    del_room(room1);
+    del_room(room2);
 }
 
 CuSuite *get_room_list_suite() {

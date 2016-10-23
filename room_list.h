@@ -5,18 +5,7 @@
 #include "room.h"
 
 /*
- * A structure that stores a pointer to a room and a link to the next room.
- */
-struct RoomLink {
-    struct Room *room;
-    struct RoomLink *next;
-};
-
-struct RoomLink *new_room_link(struct Room *room);
-struct RoomLink *del_room_link(struct RoomLink *room_link);
-
-/*
- * A structure that stores a linked list of rooms.
+ * A structure that stores a linked list of pointers to Rooms.
  */
 struct RoomList {
     size_t size;
