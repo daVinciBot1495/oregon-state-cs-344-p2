@@ -95,19 +95,19 @@ bool add_connection(struct Room *room1, struct Room *room2) {
 }
 
 /**
- * Finds the index of a connection by name for the given room. If the connection
- * cannot be found -1 is returned.
+ * Finds the connection of a given room by name. If the connection cannot bei
+ * found NULL is returned.
  */
-int find_connection(const struct Room *room, const char *name) {
+struct Room *find_connection(const struct Room *room, const char *name) {
     int i = 0;
 
     for (i = 0; i < room->num_connections; ++i) {
         if (strcmp(name, room->connections[i]->name) == 0) {
-            return i;
+            return room->connections[i];
         }
     }
 
-    return -1;
+    return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -273,7 +273,7 @@ void add_connection_when_room2_has_connections_but_room1_doesnt_should_not_add_c
     del_room(room2);
 }
 
-void find_connection_when_connection_doesnt_exist_should_return_negative_one(CuTest *tc) {
+void find_connection_when_connection_doesnt_exist_should_return_null(CuTest *tc) {
     // Given
     const char *name1 = "name1";
     const room_t type1 = START_ROOM;
@@ -284,17 +284,17 @@ void find_connection_when_connection_doesnt_exist_should_return_negative_one(CuT
     struct Room *room2 = new_room(name2, type2);
 
     // When
-    const int actual = find_connection(room1, room2->name);
+    struct Room *actual = find_connection(room1, room2->name);
 
     // Then
-    CuAssertIntEquals(tc, -1, actual);
+    CuAssertPtrEquals(tc, NULL, actual);
 
     // Clean up
     del_room(room1);
     del_room(room2);
 }
 
-void find_connection_when_connection_exists_should_return_index(CuTest *tc) {
+void find_connection_when_connection_exists_should_return_connection(CuTest *tc) {
     // Given
     const char *name1 = "name1";
     const room_t type1 = START_ROOM;
@@ -307,10 +307,10 @@ void find_connection_when_connection_exists_should_return_index(CuTest *tc) {
     add_connection(room1, room2);
 
     // When
-    const int actual = find_connection(room1, room2->name);
+    struct Room *actual = find_connection(room1, room2->name);
 
     // Then
-    CuAssertIntEquals(tc, 0, actual);
+    CuAssertPtrEquals(tc, room2, actual);
 
     // Clean up
     del_room(room1);
@@ -328,8 +328,8 @@ CuSuite *get_room_suite() {
     SUITE_ADD_TEST(suite, add_connection_when_different_rooms_should_add_connection);
     SUITE_ADD_TEST(suite, add_connection_when_room1_has_connections_but_room2_doesnt_should_not_add_connection);
     SUITE_ADD_TEST(suite, add_connection_when_room2_has_connections_but_room1_doesnt_should_not_add_connection);
-    SUITE_ADD_TEST(suite, find_connection_when_connection_doesnt_exist_should_return_negative_one);
-    SUITE_ADD_TEST(suite, find_connection_when_connection_exists_should_return_index);
+    SUITE_ADD_TEST(suite, find_connection_when_connection_doesnt_exist_should_return_null);
+    SUITE_ADD_TEST(suite, find_connection_when_connection_exists_should_return_connection);
 
     return suite;
 }
