@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "room.h"
+#include "CuTest.h"
 
 const size_t MAX_CONNECTIONS = 6;
 
@@ -73,7 +74,7 @@ bool has_connection_available(const struct Room *room) {
  * added then true is returned. Otherwise, false is returned.
  */
 bool add_connection(struct Room *room1, struct Room *room2) {
-    if (room1 != room2) {
+    if (room1 == room2) {
         // If room1 and room2 point to the same Room then don't add a
         // connection since self connections are not allowed
         return false;
@@ -90,4 +91,182 @@ bool add_connection(struct Room *room1, struct Room *room2) {
         // If both rooms don't have connections available
         return false;
     }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Unit tests
+////////////////////////////////////////////////////////////////////////////////
+
+void new_room_should_create_new_room(CuTest *tc) {
+    // Given
+    const char *name = "name";
+    const room_t type = START_ROOM;
+
+    // When
+    struct Room *room = new_room(name, type);
+
+    // Then
+    CuAssertPtrNotNull(tc, room);
+    CuAssertStrEquals(tc, name, room->name);
+    CuAssertIntEquals(tc, type, room->type);
+    CuAssertIntEquals(tc, 0, room->num_connections);
+    CuAssertPtrNotNull(tc, room->connections);
+
+    // Clean up
+    del_room(room);
+}
+
+void has_connection_available_when_num_connections_less_than_max_should_return_true(CuTest *tc) {
+    // Given
+    const char *name = "name";
+    const room_t type = START_ROOM;
+    struct Room *room = new_room(name, type);
+
+    // When
+    const bool actual = has_connection_available(room);
+
+    // Then
+    CuAssertIntEquals(tc, true, actual);
+
+    // Clean up
+    del_room(room);
+}
+
+void has_connection_available_when_num_connections_equals_max_should_return_false(CuTest *tc) {
+    // Given
+    const char *name = "name";
+    const room_t type = START_ROOM;
+    struct Room *room = new_room(name, type);
+    room->num_connections = MAX_CONNECTIONS;
+
+    // When
+    const bool actual = has_connection_available(room);
+
+    // Then
+    CuAssertIntEquals(tc, false, actual);
+
+    // Clean up
+    del_room(room);
+}
+
+void has_connection_available_when_num_connections_greater_than_max_should_return_false(CuTest *tc) {
+    // Given
+    const char *name = "name";
+    const room_t type = START_ROOM;
+    struct Room *room = new_room(name, type);
+    room->num_connections = MAX_CONNECTIONS + 1;
+
+    // When
+    const bool actual = has_connection_available(room);
+
+    // Then
+    CuAssertIntEquals(tc, false, actual);
+
+    // Clean up
+    del_room(room);
+}
+
+void add_connection_when_same_rooms_should_not_add_connection(CuTest *tc) {
+    // Given
+    const char *name = "name";
+    const room_t type = START_ROOM;
+    struct Room *room = new_room(name, type);
+
+    // When
+    const bool actual = add_connection(room, room);
+
+    // Then
+    CuAssertIntEquals(tc, false, actual);
+    CuAssertIntEquals(tc, 0, room->num_connections);
+
+    // Clean up
+    del_room(room);
+}
+
+void add_connection_when_different_rooms_should_add_connection(CuTest *tc) {
+    // Given
+    const char *name1 = "name1";
+    const room_t type1 = START_ROOM;
+    struct Room *room1 = new_room(name1, type1);
+
+    const char *name2 = "name2";
+    const room_t type2 = END_ROOM;
+    struct Room *room2 = new_room(name2, type2);
+
+    // When
+    const bool actual = add_connection(room1, room2);
+
+    // Then
+    CuAssertIntEquals(tc, true, actual);
+    CuAssertIntEquals(tc, 1, room1->num_connections);
+    CuAssertIntEquals(tc, 1, room2->num_connections);
+    CuAssertPtrEquals(tc, room2, room1->connections[0]);
+    CuAssertPtrEquals(tc, room1, room2->connections[0]);
+
+    // Clean up
+    del_room(room1);
+    del_room(room2);
+}
+
+void add_connection_when_room1_has_connections_but_room2_doesnt_should_not_add_connection(CuTest *tc) {
+    // Given
+    const char *name1 = "name1";
+    const room_t type1 = START_ROOM;
+    struct Room *room1 = new_room(name1, type1);
+
+    const char *name2 = "name2";
+    const room_t type2 = END_ROOM;
+    struct Room *room2 = new_room(name2, type2);
+    room2->num_connections = MAX_CONNECTIONS;
+
+    // When
+    const bool actual = add_connection(room1, room2);
+
+    // Then
+    CuAssertIntEquals(tc, false, actual);
+    CuAssertIntEquals(tc, 0, room1->num_connections);
+    CuAssertIntEquals(tc, MAX_CONNECTIONS, room2->num_connections);
+
+    // Clean up
+    del_room(room1);
+    del_room(room2);
+}
+
+void add_connection_when_room2_has_connections_but_room1_doesnt_should_not_add_connection(CuTest *tc) {
+    // Given
+    const char *name1 = "name1";
+    const room_t type1 = START_ROOM;
+    struct Room *room1 = new_room(name1, type1);
+    room1->num_connections = MAX_CONNECTIONS;
+
+    const char *name2 = "name2";
+    const room_t type2 = END_ROOM;
+    struct Room *room2 = new_room(name2, type2);
+
+    // When
+    const bool actual = add_connection(room1, room2);
+
+    // Then
+    CuAssertIntEquals(tc, false, actual);
+    CuAssertIntEquals(tc, MAX_CONNECTIONS, room1->num_connections);
+    CuAssertIntEquals(tc, 0, room2->num_connections);
+
+    // Clean up
+    del_room(room1);
+    del_room(room2);
+}
+
+CuSuite *get_room_suite() {
+    CuSuite *suite = CuSuiteNew();
+
+    SUITE_ADD_TEST(suite, new_room_should_create_new_room);
+    SUITE_ADD_TEST(suite, has_connection_available_when_num_connections_less_than_max_should_return_true);
+    SUITE_ADD_TEST(suite, has_connection_available_when_num_connections_equals_max_should_return_false);
+    SUITE_ADD_TEST(suite, has_connection_available_when_num_connections_greater_than_max_should_return_false);
+    SUITE_ADD_TEST(suite, add_connection_when_same_rooms_should_not_add_connection);
+    SUITE_ADD_TEST(suite, add_connection_when_different_rooms_should_add_connection);
+    SUITE_ADD_TEST(suite, add_connection_when_room1_has_connections_but_room2_doesnt_should_not_add_connection);
+    SUITE_ADD_TEST(suite, add_connection_when_room2_has_connections_but_room1_doesnt_should_not_add_connection);
+
+    return suite;
 }
