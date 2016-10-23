@@ -1,7 +1,7 @@
 #ifndef ROOM_H
 #define ROOM_H
 
-#include <stdlib.h>
+#include <stddef.h>
 #include "utils.h"
 
 /*

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "room.h"
 #include "CuTest.h"
@@ -94,7 +95,7 @@ bool add_connection(struct Room *room1, struct Room *room2) {
     }
 }
 
-/**
+/*
  * Finds the connection of a given room by name. If the connection cannot bei
  * found NULL is returned.
  */

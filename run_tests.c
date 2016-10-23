@@ -3,6 +3,7 @@
 
 CuSuite *get_utils_suite();
 CuSuite *get_room_suite();
+CuSuite *get_room_list_suite();
 
 int main(int argc, char *argv[]) {
     CuString *output = CuStringNew();
@@ -10,6 +11,7 @@ int main(int argc, char *argv[]) {
 
     CuSuiteAddSuite(suite, get_utils_suite());
     CuSuiteAddSuite(suite, get_room_suite());
+    CuSuiteAddSuite(suite, get_room_list_suite());
 
     CuSuiteRun(suite);
     CuSuiteSummary(suite, output);
